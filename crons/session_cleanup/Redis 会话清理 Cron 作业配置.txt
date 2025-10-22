@@ -1,0 +1,37 @@
+# Redis 会话清理 Cron 作业配置
+# 
+# 这个文件展示了如何设置定期清理任务
+# 将这些行添加到你的 crontab 中（使用 `crontab -e`）
+
+# 每天凌晨 2 点执行完整清理（孤儿会话 + 过期会话）
+0 2 * * * /usr/bin/python3 /path/to/your/project/crons/session_cleanup/scheduled_cleanup.py >> /var/log/session-cleanup.log 2>&1
+
+# 每 6 小时执行一次孤儿会话清理（更频繁的数据一致性检查）
+0 */6 * * * /usr/bin/python3 /path/to/your/project/crons/session_cleanup/session_cleanup.py --orphaned-only >> /var/log/session-cleanup.log 2>&1
+
+# 每周日凌晨 1 点执行深度清理（清理超过 7 天的过期会话）
+0 1 * * 0 /usr/bin/python3 /path/to/your/project/crons/session_cleanup/session_cleanup.py --max-age-days 7 >> /var/log/session-cleanup.log 2>&1
+
+# 环境变量设置示例（根据你的实际配置调整）
+# REDIS_URL=redis://localhost:6379/0
+# REDIS_PREFIX=appauth
+
+# 使用示例：
+# 1. 编辑 crontab：crontab -e
+# 2. 添加上述任务行（修改路径为你的实际路径）
+# 3. 确保 Python 环境和依赖正确安装
+# 4. 确保脚本有执行权限：chmod +x /path/to/scripts
+
+# 手动执行示例：
+# 
+# 清理孤儿会话记录（默认，安全操作）
+python3 crons/session_cleanup/session_cleanup.py
+
+# 查看要清理的内容（模拟运行）
+python3 crons/session_cleanup/session_cleanup.py --dry-run
+
+# 同时清理孤儿会话和超过30天的过期会话（慎用）
+python3 crons/session_cleanup/session_cleanup.py --include-expired
+
+# 同时清理孤儿会话和超过7天的过期会话（慎用）
+python3 crons/session_cleanup/session_cleanup.py --include-expired --max-age-days 7

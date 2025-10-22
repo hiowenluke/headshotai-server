@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# 用法：
+#    直接执行 ./run_server （默认 watch 自动重启模式）
+#    单次运行：./run_server once   或 ./run_server run
+
+# Enable extended globbing (needed for +([[:space:]]) patterns on older bash)
+shopt -s extglob 2>/dev/null || true
+
+# 确保 Redis 运行
+if ! redis-cli ping > /dev/null 2>&1; then
+	echo "[DEV] Redis is not running, starting..." >&2
+	bash scripts/redis/start-redis.sh || {
+		echo "[WARN] Failed to start Redis automatically. Please start it manually:" >&2
+		echo "  npm run redis:start" >&2
+	}
+else
+    echo "[DEV] Redis is running..." >&2
+fi
+
+PORT=${PORT:-5010}
+APP=./server/app.py
+WATCH_DIR=./server
+
+# 加载本地环境变量（如果存在 .env）
+if [[ -f .env ]]; then
+	bash_major=${BASH_VERSINFO[0]:-3}
+	if (( bash_major >= 4 )); then
+		# Bash >=4 path (associative array)
+		declare -A __ENV_TMP_STORE=()
+		while IFS= read -r line; do
+			line=${line%$'\r'}
+			line_trim="${line##+([[:space:]])}"
+			line_trim="${line_trim%%+([[:space:]])}"
+			[[ -z "$line_trim" ]] && continue
+			[[ $line_trim == \#* ]] && continue
+			if [[ $line_trim =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+				key="${BASH_REMATCH[1]}"; val="${BASH_REMATCH[2]}"
+				if [[ $val == '"'*'"' && ${#val} -ge 2 ]]; then val="${val:1:-1}"; fi
+				if [[ $val == "'*'" && ${#val} -ge 2 ]]; then val="${val:1:-1}"; fi
+				prev=""
+				while [[ "$val" != "$prev" && "$val" =~ \$\{([A-Za-z_][A-Za-z0-9_]*)\} ]]; do
+					prev="$val"; var_name="${BASH_REMATCH[1]}"; rep="${__ENV_TMP_STORE[$var_name]:-${!var_name-}}"; val="${val//\$\{$var_name\}/$rep}"
+				done
+				__ENV_TMP_STORE[$key]="$val"; export "$key"="$val"
+			fi
+		done < .env
+	else
+		# Bash 3.x fallback (no assoc arrays, simple single-pass expansion of previously exported vars only)
+		while IFS= read -r line; do
+			line=${line%$'\r'}
+			line_trim="${line##+([[:space:]])}"
+			line_trim="${line_trim%%+([[:space:]])}"
+			[[ -z "$line_trim" ]] && continue
+			[[ $line_trim == \#* ]] && continue
+			if [[ $line_trim =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+				key="${BASH_REMATCH[1]}"; val="${BASH_REMATCH[2]}"
+				if [[ $val == '"'*'"' && ${#val} -ge 2 ]]; then val="${val:1:-1}"; fi
+				if [[ $val == "'*'" && ${#val} -ge 2 ]]; then val="${val:1:-1}"; fi
+				prev=""
+				# Replace only already-exported vars
+				while [[ "$val" != "$prev" && "$val" =~ \$\{([A-Za-z_][A-Za-z0-9_]*)\} ]]; do
+					prev="$val"; var_name="${BASH_REMATCH[1]}"; rep="${!var_name-}"; val="${val//\$\{$var_name\}/$rep}"
+				done
+				export "$key"="$val"
+			fi
+		done < .env
+	fi
+	_len_var=${GOOGLE_CLIENT_ID:-}
+	_echo_len=${#_len_var}
+	echo "[ENV] Loaded .env (GOOGLE_CLIENT_ID length: ${_echo_len}, bash major=${bash_major})" >&2 || true
+fi
+
+# Avoid Flask printing tip about python-dotenv (we already load .env manually)
+export FLASK_SKIP_DOTENV=1
+
+# ---------------- Session Longevity Defaults (Plan A) ----------------
+# 如果用户未在环境或 .env 中显式设置，则提供合理的长会话默认值。
+: "${SESSION_MIN_SECONDS:=2592000}"       # 30 天
+: "${SESSION_SLIDING:=1}"
+: "${SESSION_SLIDING_SECONDS:=86400}"      # 每次滑动续期目标 1 天
+: "${SESSION_ABSOLUTE_SECONDS:=7776000}"   # 90 天绝对上限
+export SESSION_MIN_SECONDS SESSION_SLIDING SESSION_SLIDING_SECONDS SESSION_ABSOLUTE_SECONDS
+# --------------------------------------------------------------------
+
+mode=${1:-watch}
+
+run_once() {
+	echo "[DEV] Starting server on port ${PORT} (pid $$)" >&2
+	exec python3 "$APP" --port=${PORT}
+}
+
+if [[ "$mode" == "watch" ]]; then
+	echo "[DEV] Auto-reload mode enabled (polling). Port=${PORT}" >&2
+	last_sig=""
+	pid=""
+	start_server() {
+		python3 "$APP" --port=${PORT} &
+		pid=$!
+		echo "[DEV] Server PID=${pid}" >&2
+	}
+	calc_sig() {
+		# hash all server python + config files (excluding __pycache__)
+		find "$WATCH_DIR" -type f \( -name '*.py' -o -name '*.json' \) ! -path '*/__pycache__/*' -print0 | sort -z | xargs -0 cat | shasum | awk '{print $1}'
+	}
+	last_sig=$(calc_sig)
+	start_server
+	trap 'echo "[DEV] Stopping..."; [[ -n "$pid" ]] && kill $pid 2>/dev/null || true; exit 0' INT TERM
+	while true; do
+		sleep 1
+		sig=$(calc_sig)
+		if [[ "$sig" != "$last_sig" ]]; then
+			echo "[DEV] Change detected -> restarting..." >&2
+			last_sig=$sig
+			if [[ -n "$pid" ]] && kill -0 $pid 2>/dev/null; then
+				kill $pid 2>/dev/null || true
+				wait $pid 2>/dev/null || true
+			fi
+			start_server
+		fi
+	done
+elif [[ "$mode" == "run" || "$mode" == "once" ]]; then
+	run_once
+else
+	echo "[DEV] Unknown mode '$mode' (use watch|run|once). Default is watch." >&2
+	run_once
+fi

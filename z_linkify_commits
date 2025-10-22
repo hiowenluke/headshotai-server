@@ -1,0 +1,1 @@
+python3 scripts/z_linkify_commits.py ./里程碑事件.md

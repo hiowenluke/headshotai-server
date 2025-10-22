@@ -1,0 +1,21 @@
+{
+  "total_images": 100,
+  "per_page": 10,
+  "auto_load_limit": 30,
+  "price_map": {
+    "1P":  { "price": 99,  "eta_seconds": 30 },
+    "20P": { "price": 399, "eta_seconds": 1800 },
+    "40P": { "price": 499, "eta_seconds": 1200 },
+    "80P": { "price": 599, "eta_seconds": 600 },
+    "DIY": { "price": 299, "eta_seconds": 60 }
+  },
+  "recharge_rules": [
+    { "usd": 4.99, "coins": 45, "bonus": 0 },
+    { "usd": 9.99, "coins": 100, "bonus": 0 },
+    { "usd": 19.99, "coins": 200, "bonus": 20 },
+    { "usd": 49.99, "coins": 500, "bonus": 100 },
+    { "usd": 99.99, "coins": 1000, "bonus": 300 }
+  ],
+  "recharge_currency": "USD",
+  "coin_symbol": "C"
+}
