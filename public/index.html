@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Headshot AI</title>
+
+    <base href="/" />
+
+    <meta name="color-scheme" content="light dark" />
+    <meta name="viewport"
+        content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+
+    <!-- 移动端特殊配置 -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+
+    <!-- 防止移动端浏览器的导航手势 -->
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-title" content="Headshot AI" />
+
+    <!-- add to homescreen for ios -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Headshot AI" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- PreferencesPopup JavaScript -->
+    <script src="/static/preferences-popup.js"></script>
+</head>
+
+<body class="dark">
+
+
+    <!-- 预防首屏白闪 + skeleton 样式 --></span>
+    <style>
+        :root {
+            color-scheme: dark;
+            --shell-bg: #0b0c0f;
+            --shell-fg: #d3dae3;
+        }
+
+        :root,
+        body.dark {
+            --ion-background-color: var(--shell-bg);
+            --ion-text-color: var(--shell-fg);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            background: var(--shell-bg);
+            color: var(--shell-fg);
+            min-height: 100%;
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+            transition: none !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        #app {
+            min-height: 100vh;
+        }
+    </style>
+
+    <!-- 动态加载PreferencesPopup或骨架屏 -->
+    <div id="dynamic-content"></div>
+    <div id="app"></div>
+    <script>
+        (() => {
+            // 全局状态变量
+            window.__appMounted = false;
+            window.__preferencesCompleted = false;
+            window.__showingPreferences = false;
+            window.__hadPreferencesPopup = false;
+
+            // 检查是否需要显示PreferencesPopup
+            function shouldShowPreferences() {
+                try {
+                    const PREF_KEY = 'user_prefs_v1';
+                    const saved = localStorage.getItem(PREF_KEY);
+                    return !saved; // 如果没有保存的偏好设置，则显示弹窗
+                } catch (error) {
+                    return true; // 出错时默认显示
+                }
+            }
+
+            // 简单的HTML加载函数
+            async function loadHTML(url) {
+                try {
+                    const response = await fetch(url);
+                    return await response.text();
+                } catch (error) {
+                    console.error('Failed to load HTML:', url, error);
+                    return '';
+                }
+            }
+
+            // 显示PreferencesPopup
+            async function showPreferencesPopup() {
+                const content = await loadHTML('/static/preferences-popup.html');
+                if (!content) {
+                    window.__showingPreferences = false;
+                    return false;
+                }
+
+                const host = document.getElementById('dynamic-content');
+                if (!host) {
+                    window.__showingPreferences = false;
+                    return false;
+                }
+
+                host.innerHTML = content;
+                window.__showingPreferences = true;
+                window.__hadPreferencesPopup = true; // 标记曾经显示过PreferencesPopup
+
+                // HTML内容加载完成后，调用初始化函数
+                setTimeout(() => {
+                    if (typeof window.initPreferencesPopup === 'function') {
+                        console.log('Calling initPreferencesPopup after HTML loaded');
+                        window.initPreferencesPopup();
+                    } else {
+                        console.error('initPreferencesPopup function not found!');
+                    }
+                }, 100);
+
+                return true;
+            }
+
+            // 显示骨架屏
+            async function showSkeleton() {
+                // 如果曾经显示过PreferencesPopup，则不显示骨架屏
+                if (window.__hadPreferencesPopup && window.__showingPreferences) {
+                    console.log('Skipping skeleton screen - had PreferencesPopup');
+                    return;
+                }
+
+                // 如果 Vue 已经挂载，不显示骨架屏
+                if (window.__appMounted) {
+                    console.log('Skipping skeleton screen - app already mounted');
+                    return;
+                }
+
+                let removed = false;
+                let revealTimer = null;
+
+                // 提前设置 hideAppShell 函数，避免竞态条件
+                window.__hideAppShell = () => {
+                    if (removed) return;
+                    window.__appMounted = true;
+
+                    if (revealTimer) {
+                        window.clearTimeout(revealTimer);
+                    }
+
+                    const shell = document.getElementById('app-shell');
+                    if (shell) {
+                        shell.classList.remove('is-delayed');
+                        shell.classList.add('is-hidden');
+                        window.setTimeout(() => {
+                            if (shell.parentElement) {
+                                shell.parentElement.removeChild(shell);
+                            }
+                            removed = true;
+                        }, 2000);
+                    } else {
+                        // 骨架屏还没加载完成，标记为已移除，阻止后续显示
+                        removed = true;
+                    }
+                };
+
+                const content = await loadHTML('/static/skeleton.html');
+
+                // 加载完成后再次检查是否已经挂载
+                if (window.__appMounted || removed) {
+                    console.log('App mounted during skeleton load, skipping display');
+                    return;
+                }
+
+                if (content) {
+                    document.getElementById('dynamic-content').innerHTML = content;
+
+                    // 骨架屏逻辑
+                    const shell = document.getElementById('app-shell');
+                    if (!shell) return;
+
+                    // 延迟 1s 再决定是否展示骨架屏
+                    revealTimer = window.setTimeout(() => {
+                        if (removed) return;
+                        if (window.__appMounted) return;
+                        // 再次检查是否曾经显示过PreferencesPopup
+                        if (window.__hadPreferencesPopup) {
+                            console.log('Skipping skeleton screen reveal - had PreferencesPopup');
+                            return;
+                        }
+                        shell.classList.remove('is-delayed');
+                    }, 1000);
+                }
+            }
+
+            // 初始化逻辑
+            async function initialize() {
+                const preferencesSupported = typeof window.initPreferencesPopup === 'function';
+                if (preferencesSupported) {
+                    if (shouldShowPreferences()) {
+                        const displayed = await showPreferencesPopup();
+                        if (displayed) {
+                            // 监听PreferencesPopup完成事件
+                            const checkPreferencesCompleted = setInterval(() => {
+                                if (window.__preferencesCompleted) {
+                                    clearInterval(checkPreferencesCompleted);
+                                    window.__showingPreferences = false;
+
+                                    // PreferencesPopup完成后，不显示骨架屏，直接等待Vue应用挂载
+                                    console.log('PreferencesPopup completed, waiting for Vue app to mount...');
+                                    // 不调用showSkeleton()，让页面保持空白直到Vue应用挂载
+                                }
+                            }, 100);
+                            return;
+                        }
+
+                        console.warn('Preferences popup content unavailable, falling back to skeleton screen.');
+                        await showSkeleton();
+                        return;
+                    }
+
+                    await showSkeleton();
+                    return;
+                }
+
+                await showSkeleton();
+            }
+
+            // 为没有PreferencesPopup的情况提供默认的hideAppShell函数
+            window.__hideAppShell = () => { };
+
+            // 页面加载完成后初始化
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initialize);
+            } else {
+                initialize();
+            }
+        })();
+    </script>
+    <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

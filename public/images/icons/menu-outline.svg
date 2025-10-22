@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>menu-outline</title>
+    <g id="menu-outline" stroke="none" fill="none" stroke-linecap="round" stroke-width="32">
+        <path d="M80,111.5 L432,111.5 M80,256.5 L432,256.5 M80,400.5 L432,400.5" id="Shape" stroke="#000000"></path>
+    </g>
+</svg>

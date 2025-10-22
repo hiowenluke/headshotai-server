@@ -1,0 +1,272 @@
+<!-- PreferencesPopup 组件 -->
+<style>
+    .preferences-popup-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: env(safe-area-inset-top, 10px) env(safe-area-inset-right, 10px) env(safe-area-inset-bottom, 10px) env(safe-area-inset-left, 10px);
+    }
+
+    .preferences-popup-card {
+        position: relative;
+        width: 95vw;
+        max-width: 420px;
+        background: rgba(46, 48, 53, 0.95);
+        backdrop-filter: blur(20px) saturate(140%);
+        border-radius: 30px;
+        padding: 22px 16px;
+        box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+        top: 10px;
+    }
+
+    .preferences-title {
+        text-align: center;
+        font-size: 22px;
+        padding: 0 0 5px;
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .preferences-section {
+        margin-top: 15px;
+        overflow: visible;
+        margin-bottom: 20px;
+    }
+
+    .preferences-section:first-of-type {
+        margin-top: 7px;
+    }
+
+    .preferences-section-title {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        margin-bottom: 12px;
+        padding: 6px 0 6px;
+    }
+
+    .preferences-options {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px 28px;
+    }
+
+    .preferences-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0;
+        /* border-radius: 12px; */
+        /* background: rgba(255, 255, 255, 0.05); */
+        /* border: 1px solid rgba(255, 255, 255, 0.1); */
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 16px;
+        font-weight: 500;
+        user-select: none;
+        color: #fff;
+    }
+
+    .preferences-radio {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        position: relative;
+        flex-shrink: 0;
+        transition: all 0.2s ease;
+    }
+
+    .preferences-option.active .preferences-radio {
+        border-color: #4f9eff;
+        background: #4f9eff;
+    }
+
+    .preferences-radio-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #4f9eff;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        transition: transform 0.2s ease;
+    }
+
+    .preferences-option.active .preferences-radio-dot {
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    .preferences-actions {
+        margin-top: 30px;
+        margin-bottom: 0px;
+    }
+
+    .preferences-apply-btn {
+        width: 100%;
+        background: #2a78ff;
+        color: #fff;
+        border: none;
+        font-size: 20px;
+        font-weight: 700;
+        padding: 16px 12px;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        z-index: 10;
+        pointer-events: auto;
+    }
+
+    .preferences-apply-btn:hover {
+        background: #1968e6;
+        transform: translateY(-1px);
+    }
+
+    .preferences-apply-btn:active {
+        transform: translateY(1px);
+        background: #1558cc;
+    }
+
+    .preferences-popup-hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+</style>
+
+<div id="preferences-popup" class="preferences-popup-backdrop">
+    <div class="preferences-popup-card">
+        <h2 class="preferences-title">Preferences</h2>
+
+        <!-- 性别选择区域 -->
+        <div class="preferences-section">
+            <div class="preferences-section-title">Gender</div>
+            <div class="preferences-options" data-group="gender">
+                <div class="preferences-option" data-value="male">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>Male</span>
+                </div>
+                <div class="preferences-option active" data-value="female">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>Female</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 种族选择区域 -->
+        <div class="preferences-section">
+            <div class="preferences-section-title">Ethnicity</div>
+            <div class="preferences-options" data-group="ethnicity">
+                <div class="preferences-option active" data-value="white">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>White</span>
+                </div>
+                <div class="preferences-option" data-value="black">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>Black</span>
+                </div>
+                <div class="preferences-option" data-value="hispanic">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>Hispanic</span>
+                </div>
+                <div class="preferences-option" data-value="asian">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>Asian</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 年龄选择区域 -->
+        <div class="preferences-section">
+            <div class="preferences-section-title">Age</div>
+            <div class="preferences-options" data-group="age">
+                <div class="preferences-option" data-value="young">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>Young</span>
+                </div>
+                <div class="preferences-option active" data-value="middle">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>Middle</span>
+                </div>
+                <div class="preferences-option" data-value="elderly">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>Elderly</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 体型选择区域 -->
+        <div class="preferences-section">
+            <div class="preferences-section-title">Body Size</div>
+            <div class="preferences-options" data-group="bodySize">
+                <div class="preferences-option" data-value="s">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>S</span>
+                </div>
+                <div class="preferences-option active" data-value="m">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>M</span>
+                </div>
+                <div class="preferences-option" data-value="l">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>L</span>
+                </div>
+                <div class="preferences-option" data-value="xl">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>XL</span>
+                </div>
+                <div class="preferences-option" data-value="xxl">
+                    <div class="preferences-radio">
+                        <div class="preferences-radio-dot"></div>
+                    </div>
+                    <span>XXL</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="preferences-actions">
+            <button class="preferences-apply-btn" id="preferences-apply">Apply</button>
+        </div>
+    </div>
+</div>
