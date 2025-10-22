@@ -4,7 +4,7 @@
 
 # 我
 
-我注意到你的 sql 语句使用 id='7b9835be-aab3-4b39-972f-3d8f26b127f3'，但是 public/upload 下的 id 是 112327427190669663663。为什么这两个不同？
+我注意到你的 sql 语句使用 id='7b9835be-aab3-4b39-972f-3d8f26b127f3'，但是 store/upload 下的 id 是 112327427190669663663。为什么这两个不同？
 
 
 
@@ -18,7 +18,7 @@
 - `user_identities` 表里记录了 OAuth 提供方返回的 [provider_sub](vscode-file://vscode-app/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)（Google 的 [sub](vscode-file://vscode-app/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)），是你看到的长数字串 `112327427190669663663`。
 - 我们通过这两个表的关联把 Google 账号和用户行关联在一起。
 
-## ❷ `public/upload/...` 目录名使用的是“用户标识”
+## ❷ `store/upload/...` 目录名使用的是“用户标识”
 
 - 本地磁盘目录命名不会用 UUID，而是用一个简化的 “user ident” 字符串。
 - 代码中 [_sanitize_user()](vscode-file://vscode-app/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) 会优先取 [session['sub'\]](vscode-file://vscode-app/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)，也就是 [provider_sub](vscode-file://vscode-app/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)；只有没有 [sub](vscode-file://vscode-app/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) 才退回 email。
@@ -75,7 +75,7 @@ user_identities.provider_sub (Google sub)
 
 # 我
 
-如果这个用户使用同一个 email，在数据库里有唯一的 uuid，当他先用 google 账号登录，上传照片，保存在 public/upload/112327427190669663663 下，然后换成 facebook 账号登录，那么他能看到之前用 google 账号登录时上传的照片吗？
+如果这个用户使用同一个 email，在数据库里有唯一的 uuid，当他先用 google 账号登录，上传照片，保存在 store/upload/112327427190669663663 下，然后换成 facebook 账号登录，那么他能看到之前用 google 账号登录时上传的照片吗？
 
 
 
@@ -96,8 +96,8 @@ user_identities.provider_sub (Google sub)
 3. **文件命名关键：[user_ident](vscode-file://vscode-app/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)**
    - 上传 API 里用 [_sanitize_user()](vscode-file://vscode-app/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) 来决定目录名，它优先取 [session['sub'\]](vscode-file://vscode-app/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)，只有没有 [sub](vscode-file://vscode-app/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) 时才退回 email。
    - 因此：
-     - Google 登录 → 目录是 `public/upload/<Google sub>/faces/...`
-     - Facebook 登录（同邮箱）→ 目录会变成 `public/upload/<Facebook id>/faces/...`
+     - Google 登录 → 目录是 `store/upload/<Google sub>/faces/...`
+     - Facebook 登录（同邮箱）→ 目录会变成 `store/upload/<Facebook id>/faces/...`
 4. **前端、后端读取缩略图也都是用同一个 [user_ident](vscode-file://vscode-app/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)**
    - 前端 `currentUserId = authState.user?.sub || authState.user?.email`。
    - 后端 [list_recent_faces_for_user()](vscode-file://vscode-app/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) 同样优先走 [sub](vscode-file://vscode-app/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)。

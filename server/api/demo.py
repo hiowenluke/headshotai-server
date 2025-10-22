@@ -74,7 +74,7 @@ def api_demo_options():
         per_page = 50
 
     # 构建基础路径
-    base_path = os.path.join(SERVER_DIR, '..', 'public', 'images', 'demo', 'options', option_type or 'backdrops')
+    base_path = os.path.join(SERVER_DIR, '..', 'store', 'images', 'demo', 'options', option_type or 'backdrops')
     
     # 如果 category 为 '*' 或 'all'，返回所有分类的图片
     if category in ('*', 'all', None, ''):

@@ -13,7 +13,7 @@ with open(os.path.join(SERVER_DIR, 'config.json'), 'r') as f:
 
 TOTAL = cfg.get('total_images', 100)
 PER_PAGE_DEFAULT = cfg.get('per_page', 10)
-IMAGES_DIR = os.path.join(SERVER_DIR, '..', 'public', 'images', 'demo', 'home')
+IMAGES_DIR = os.path.join(SERVER_DIR, '..', 'store', 'images', 'demo', 'home')
 
 from services.files import list_files_for_category  # after BASE_DIR defined
 

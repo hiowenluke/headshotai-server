@@ -21,8 +21,8 @@ STORAGE_MODE = os.getenv('STORAGE_MODE', 'local').lower()  # local | s3
 S3_BUCKET = os.getenv('S3_BUCKET')
 S3_REGION = os.getenv('S3_REGION', 'us-east-1')
 
-# Upload root (served from front-end public directory for direct access)
-UPLOAD_ROOT = os.path.join(BASE_DIR, '..', 'public', 'upload')
+# Upload root (served from front-end store directory for direct access)
+UPLOAD_ROOT = os.path.join(BASE_DIR, '..', 'store', 'upload')
 os.makedirs(UPLOAD_ROOT, exist_ok=True)
 
 CONFIG_PATH = os.path.join(BASE_DIR, 'config.json')

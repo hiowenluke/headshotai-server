@@ -13,11 +13,11 @@ THUMBNAIL_WIDTH = "demo"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Move two levels up to reach project root relative to this file (services/)
 SERVER_DIR = os.path.dirname(BASE_DIR)
-PUBLIC_DEMO_HOME = os.path.join(SERVER_DIR, '..', 'public', 'images', THUMBNAIL_WIDTH, 'home')
-PUBLIC_DEMO_FACES = os.path.join(SERVER_DIR, '..', 'public', 'images', THUMBNAIL_WIDTH, 'faces')
+STORE_DEMO_HOME = os.path.join(SERVER_DIR, '..', 'store', 'images', THUMBNAIL_WIDTH, 'home')
+STORE_DEMO_FACES = os.path.join(SERVER_DIR, '..', 'store', 'images', THUMBNAIL_WIDTH, 'faces')
 
 __all__ = [
-    'PUBLIC_DEMO_HOME', 'PUBLIC_DEMO_FACES',
+    'STORE_DEMO_HOME', 'STORE_DEMO_FACES',
     'list_files_for_category', 'list_demo_faces'
 ]
 
@@ -29,7 +29,7 @@ def list_files_for_category(category: Optional[str] = None) -> List[str]:
     Otherwise returns images directly under home.
     Returned paths are relative like 'images/<THUMBNAIL_WIDTH>/home/<...>'.
     """
-    base_dir = PUBLIC_DEMO_HOME
+    base_dir = STORE_DEMO_HOME
     if category:
         # Support nested categories like 'Studio/Dark'
         cat_path = category.replace('/', os.sep)
@@ -82,7 +82,7 @@ def _is_large_variant(filename: str) -> bool:
 
 def list_demo_faces(gender: str, ethnicity: str, limit: int) -> List[str]:
     """List demo face image URLs based on gender/ethnicity subdirectories."""
-    gender_dir = os.path.join(PUBLIC_DEMO_FACES, gender)
+    gender_dir = os.path.join(STORE_DEMO_FACES, gender)
     eth_dir = os.path.join(gender_dir, ethnicity) if os.path.isdir(gender_dir) else None
     base_dir = eth_dir if (eth_dir and os.path.isdir(eth_dir)) else None
     if not base_dir:

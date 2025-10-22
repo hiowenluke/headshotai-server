@@ -35,7 +35,7 @@ __pycache__
 /plugins
 /www
 /upload
-/public/upload
+/store/upload
 
 # Local environment variables
 .env

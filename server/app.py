@@ -45,8 +45,8 @@ except Exception as e:
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 cfg = load_config()
 
-IMAGES_DIR = os.path.join(BASE_DIR, '..', 'public', 'images', 'demo', 'home')  # legacy reference
-DEMO_FACES_DIR = os.path.join(BASE_DIR, '..', 'public', 'images', 'demo', 'faces')  # legacy reference
+IMAGES_DIR = os.path.join(BASE_DIR, '..', 'store', 'images', 'demo', 'home')  # legacy reference
+DEMO_FACES_DIR = os.path.join(BASE_DIR, '..', 'store', 'images', 'demo', 'faces')  # legacy reference
 
 RAW_PRICE_MAP = cfg.get('price_map', {})
 PRICE_MAP = {k: (v.get('price') if isinstance(v, dict) else v) for k,v in RAW_PRICE_MAP.items()}
@@ -94,10 +94,10 @@ if not IS_PROD:
 # 静态图片服务路由
 @app.route('/images/<path:filename>')
 def serve_static_images(filename):
-    """Serve static images from public/images directory"""
+    """Serve static images from store/images directory"""
     from flask import send_from_directory
     import os
-    images_dir = os.path.join(BASE_DIR, '..', 'public', 'images')
+    images_dir = os.path.join(BASE_DIR, '..', 'store', 'images')
     return send_from_directory(images_dir, filename)
 
 @app.after_request
