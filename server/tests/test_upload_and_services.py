@@ -82,7 +82,7 @@ def test_recent_faces_returns_latest_entries(client):
         'ts': time.time()
     }, exp)
 
-    client.set_cookie('localhost', SESSION_COOKIE, session_id)
+    client.set_cookie(SESSION_COOKIE, session_id, domain='localhost', path='/')
 
     user_dir = os.path.join(UPLOAD_ROOT, 'recent_user', 'faces')
     shutil.rmtree(os.path.join(UPLOAD_ROOT, 'recent_user'), ignore_errors=True)
@@ -106,7 +106,7 @@ def test_recent_faces_returns_latest_entries(client):
     assert faces[-1].endswith('1001.webp')
 
     SessionManager.delete_session(session_id)
-    client.delete_cookie('localhost', SESSION_COOKIE)
+    client.delete_cookie(SESSION_COOKIE, domain='localhost', path='/')
     shutil.rmtree(os.path.join(UPLOAD_ROOT, 'recent_user'), ignore_errors=True)
 
 # ---------------- services.files tests ----------------
