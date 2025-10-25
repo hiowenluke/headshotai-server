@@ -268,6 +268,7 @@ def stripe_webhook():
     session_id = obj.get('id') if isinstance(obj, dict) else None
     amount_total = obj.get('amount_total') if isinstance(obj, dict) else None
 
+    # 处理 Checkout Session 事件（主要流程）
     if event_type in {'checkout.session.completed', 'checkout.session.async_payment_succeeded'} and session_id:
         result = payment_store.complete_topup(session_id, provider='stripe', amount_cents=amount_total)
         if not result:
@@ -276,4 +277,16 @@ def stripe_webhook():
         payment_store.update_topup_status(session_id, 'expired', provider='stripe', amount_cents=amount_total)
     elif event_type == 'checkout.session.canceled' and session_id:
         payment_store.update_topup_status(session_id, 'canceled', provider='stripe', amount_cents=amount_total)
+    
+    # 处理 Payment Intent 事件（额外保障，通常 checkout.session.completed 已经处理）
+    elif event_type == 'payment_intent.succeeded':
+        # Payment Intent 成功，但我们主要依赖 checkout.session.completed
+        # 这里只记录日志，避免重复处理
+        payment_intent_id = obj.get('id') if isinstance(obj, dict) else None
+        current_app.logger.info('stripe: payment_intent.succeeded received: %s (handled by checkout.session.completed)', payment_intent_id)
+    elif event_type == 'payment_intent.payment_failed':
+        # Payment Intent 失败
+        payment_intent_id = obj.get('id') if isinstance(obj, dict) else None
+        current_app.logger.warning('stripe: payment_intent.payment_failed received: %s', payment_intent_id)
+    
     return jsonify({'status': 'ok'})
