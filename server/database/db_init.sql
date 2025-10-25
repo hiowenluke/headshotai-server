@@ -17,6 +17,20 @@ CREATE TABLE IF NOT EXISTS users (
 );
 CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at DESC);
 
+-- Products catalog
+CREATE TABLE IF NOT EXISTS products (
+  id UUID PRIMARY KEY,
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+INSERT INTO products (id, slug, name)
+VALUES ('00000000-0000-0000-0000-000000000001', 'headshot-ai', 'Headshot AI')
+ON CONFLICT (slug) DO UPDATE
+SET id = EXCLUDED.id,
+    name = EXCLUDED.name;
+
 -- Updated-at trigger
 CREATE OR REPLACE FUNCTION trg_set_updated_at()
 RETURNS TRIGGER AS $$
@@ -36,6 +50,7 @@ EXECUTE FUNCTION trg_set_updated_at();
 CREATE TABLE IF NOT EXISTS coin_topups (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  product_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001' REFERENCES products(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   amount_cents BIGINT NOT NULL,
   coins_purchased BIGINT NOT NULL,
@@ -56,6 +71,7 @@ CREATE INDEX IF NOT EXISTS idx_coin_topups_user_time ON coin_topups(user_id, cre
 CREATE TABLE IF NOT EXISTS coin_spendings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  product_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001' REFERENCES products(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   service_type VARCHAR(10) NOT NULL,
   service_quantity INT NOT NULL,
