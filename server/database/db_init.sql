@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS coin_spendings (
   CONSTRAINT chk_spend_positive CHECK (
     service_quantity > 0 AND coin_unit_price >= 0 AND coins_spent = service_quantity * coin_unit_price
   ),
-  CONSTRAINT chk_service_type CHECK (service_type IN ('1P','20P','40P','80P','DIY'))
+  CONSTRAINT chk_service_type CHECK (service_type IN ('1P','20P','40P','80P','DIY', 'TEAM'))
 );
 CREATE INDEX IF NOT EXISTS idx_coin_spendings_user_time ON coin_spendings(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_coin_spendings_service_type ON coin_spendings(service_type);

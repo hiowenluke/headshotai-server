@@ -7,7 +7,8 @@
     "20P": { "price": 399, "eta_seconds": 1800 },
     "40P": { "price": 499, "eta_seconds": 1200 },
     "80P": { "price": 599, "eta_seconds": 600 },
-    "DIY": { "price": 299, "eta_seconds": 60 }
+    "DIY": { "price": 299, "eta_seconds": 60 },
+    "TEAM": { "price": 299, "eta_seconds": 60 }
   },
   "recharge_rules": [
     { "usd": 9.99, "coins": 100, "bonus": 0, "save": 0 },
