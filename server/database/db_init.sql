@@ -31,6 +31,28 @@ ON CONFLICT (slug) DO UPDATE
 SET id = EXCLUDED.id,
     name = EXCLUDED.name;
 
+-- Services catalog (per product)
+CREATE TABLE IF NOT EXISTS services (
+  id UUID PRIMARY KEY,
+  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  code TEXT NOT NULL,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(product_id, code)
+);
+
+INSERT INTO services (id, product_id, code, name)
+VALUES
+  ('00000000-0000-0000-0000-000000020001', '00000000-0000-0000-0000-000000000001', '1P', 'Single Photo'),
+  ('00000000-0000-0000-0000-000000020020', '00000000-0000-0000-0000-000000000001', '20P', '20 Photo Pack'),
+  ('00000000-0000-0000-0000-000000020040', '00000000-0000-0000-0000-000000000001', '40P', '40 Photo Pack'),
+  ('00000000-0000-0000-0000-000000020080', '00000000-0000-0000-0000-000000000001', '80P', '80 Photo Pack'),
+  ('00000000-0000-0000-0000-000000020500', '00000000-0000-0000-0000-000000000001', 'DIY', 'DIY Credits'),
+  ('00000000-0000-0000-0000-000000029000', '00000000-0000-0000-0000-000000000001', 'TEAM', 'Team Plan')
+ON CONFLICT (product_id, code) DO UPDATE
+SET id = EXCLUDED.id,
+    name = EXCLUDED.name;
+
 -- Updated-at trigger
 CREATE OR REPLACE FUNCTION trg_set_updated_at()
 RETURNS TRIGGER AS $$
@@ -73,17 +95,16 @@ CREATE TABLE IF NOT EXISTS coin_spendings (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   product_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001' REFERENCES products(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  service_type VARCHAR(10) NOT NULL,
+  service_id UUID NOT NULL REFERENCES services(id),
   service_quantity INT NOT NULL,
   coin_unit_price BIGINT NOT NULL,
   coins_spent BIGINT NOT NULL,
   CONSTRAINT chk_spend_positive CHECK (
     service_quantity > 0 AND coin_unit_price >= 0 AND coins_spent = service_quantity * coin_unit_price
-  ),
-  CONSTRAINT chk_service_type CHECK (service_type IN ('1P','20P','40P','80P','DIY', 'TEAM'))
+  )
 );
 CREATE INDEX IF NOT EXISTS idx_coin_spendings_user_time ON coin_spendings(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_coin_spendings_service_type ON coin_spendings(service_type);
+CREATE INDEX IF NOT EXISTS idx_coin_spendings_service_id ON coin_spendings(service_id);
 
 -- User identities (OAuth providers linkage)
 CREATE TABLE IF NOT EXISTS public.user_identities (

@@ -45,7 +45,13 @@ python3 init_db.py --dsn postgresql://user:pwd@localhost:5432/headshot_ai_dev
 psql headshot_ai_dev -c \"\\dt\"
 ```
 
-应看到 users / coin_topups / coin_spendings 三张表。
+应看到 users / products / services / coin_topups / coin_spendings 五张表。
+
+如需给现有数据库补充最新的 products/services 结构，可执行：
+```
+psql headshot_ai_dev -f server/database/123.sql
+```
+脚本支持重复执行，会自动补齐缺失列与数据。
 
 ## 独立测试 users 表插入
 
