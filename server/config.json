@@ -13,8 +13,8 @@
   "recharge_rules": [
     { "usd": 9.99, "coins": 100, "bonus": 0, "save": 0 },
     { "usd": 19.99, "coins": 200, "bonus": 20, "save": 10 },
-    { "usd": 49.99, "coins": 500, "bonus": 75, "save": 15 },
-    { "usd": 99.99, "coins": 1000, "bonus": 200, "save": 20, "badge": "MOST POPULAR" },
+    { "usd": 49.99, "coins": 500, "bonus": 75, "save": 15, "badge": "MOST POPULAR" },
+    { "usd": 99.99, "coins": 1000, "bonus": 200, "save": 20 },
     { "usd": 199.99, "coins": 2000, "bonus": 600, "save": 30 },
     { "usd": 499.99, "coins": 5000, "bonus": 2000, "save": 40 },
     { "usd": 999.99, "coins": 10000, "bonus": 5000, "save": 50, "badge": "BEST VALUE" }
