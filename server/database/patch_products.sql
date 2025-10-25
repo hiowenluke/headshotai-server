@@ -45,6 +45,7 @@ WHERE product_id IS NULL;
 
 ALTER TABLE coin_topups
   ALTER COLUMN product_id SET NOT NULL,
+  DROP CONSTRAINT IF EXISTS fk_coin_topups_product_id,
   ADD CONSTRAINT fk_coin_topups_product_id FOREIGN KEY (product_id) REFERENCES products(id);
 
 ALTER TABLE coin_spendings
@@ -56,6 +57,7 @@ WHERE product_id IS NULL;
 
 ALTER TABLE coin_spendings
   ALTER COLUMN product_id SET NOT NULL,
+  DROP CONSTRAINT IF EXISTS fk_coin_spendings_product_id,
   ADD CONSTRAINT fk_coin_spendings_product_id FOREIGN KEY (product_id) REFERENCES products(id);
 
 ALTER TABLE coin_spendings
