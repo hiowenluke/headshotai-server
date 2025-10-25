@@ -382,6 +382,10 @@ def callback():
         session_payload['is_new_user'] = bool(is_new)
         if os.environ.get('AUTH_DEBUG','0') in ('1','true','yes'):
             print(f"[AUTH][DB] upsert_user sub={sub} ok={up_ok} is_new={is_new}")
+        # 查询用户的 coin_balance 并添加到 session
+        db_user = get_user(sub)
+        if db_user:
+            session_payload['coin_balance'] = db_user.get('coin_balance', 0)
     except Exception as e:
         if os.environ.get('AUTH_DEBUG','0') in ('1','true','yes'):
             print(f"[AUTH][DB] upsert_user error {e}")

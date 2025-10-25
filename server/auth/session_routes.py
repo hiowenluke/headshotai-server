@@ -12,6 +12,7 @@ from server.auth.session_settings import (
     SESSION_COOKIE_SECURE,
     select_cookie_domain,
 )
+from server.database.db import get_user
 
 bp = Blueprint('auth_session', __name__)
 
@@ -34,9 +35,21 @@ def session_info():
     include_faces = request.args.get('faces') or request.args.get('include')
     faces_all = list_all_faces_for_user(user_ident) if include_faces == 'all' else None
 
+    # 从数据库查询最新的用户信息（包括 coin_balance）
+    db_user = get_user(user_ident)
+    user_data = dict(data)  # 复制 session 数据
+    if db_user:
+        # 用数据库中的最新数据更新 session 数据
+        user_data['coin_balance'] = db_user.get('coin_balance', 0)
+        # 可选：更新其他可能变化的字段
+        if db_user.get('name'):
+            user_data['name'] = db_user['name']
+        if db_user.get('picture'):
+            user_data['picture'] = db_user['picture']
+
     resp_body = {
         'authenticated': True,
-        'user': data,
+        'user': user_data,
         'recent_faces': recent_faces,
     }
     if faces_all is not None:
