@@ -40,7 +40,8 @@ def record_checkout_session(
     coins_purchased: int,
     coins_bonus: int,
     provider: str = DEFAULT_PROVIDER,
-    status: str = 'pending'
+    status: str = 'pending',
+    product_id: str = '00000000-0000-0000-0000-000000000001'
 ) -> bool:
     """Insert or update a ``coin_topups`` record for a Stripe checkout session.
 
@@ -59,10 +60,10 @@ def record_checkout_session(
         """
         INSERT INTO coin_topups (
             user_id, amount_cents, coins_purchased, coins_bonus, coins_total,
-            payment_provider, payment_tx_id, status
+            payment_provider, payment_tx_id, status, product_id
         )
         VALUES (%(user_id)s, %(amount_cents)s, %(coins_purchased)s, %(coins_bonus)s,
-                %(coins_total)s, %(provider)s, %(session_id)s, %(status)s)
+                %(coins_total)s, %(provider)s, %(session_id)s, %(status)s, %(product_id)s)
         ON CONFLICT (payment_provider, payment_tx_id)
         DO UPDATE SET
             amount_cents = EXCLUDED.amount_cents,
@@ -82,7 +83,8 @@ def record_checkout_session(
         'coins_total': coins_total,
         'provider': provider,
         'session_id': session_id,
-        'status': status
+        'status': status,
+        'product_id': product_id
     }
 
     try:
