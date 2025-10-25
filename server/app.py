@@ -18,6 +18,7 @@ from api.images import bp as images_bp  # type: ignore
 from api.debug import bp as debug_bp  # type: ignore
 from api.new_user import bp as new_user_bp  # type: ignore
 from api.payment import bp as payment_bp  # type: ignore
+from api.coin_history import bp as coin_history_bp  # type: ignore
 from settings import IS_PROD, load_config, STORAGE_MODE, S3_BUCKET, S3_REGION, UPLOAD_ROOT
 
 app = Flask(__name__, static_folder='..')
@@ -90,6 +91,7 @@ app.register_blueprint(upload_bp)
 app.register_blueprint(images_bp)
 app.register_blueprint(new_user_bp)
 app.register_blueprint(payment_bp)
+app.register_blueprint(coin_history_bp)
 if not IS_PROD:
     app.register_blueprint(debug_bp)
 
